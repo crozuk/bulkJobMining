@@ -26,6 +26,10 @@
 #
 # Note: If the SECRET_KEY environment variable is set, it will be used as the secret key.
 #       Otherwise, the --secret-key argument must be provided.
+# source env/bin/activate
+
+# script.py
+import config
 
 import argparse
 import base64
@@ -39,6 +43,8 @@ from typing import Any, Dict
 from requests import Session
 from requests import exceptions as requests_exceptions
 
+from dotenv import load_dotenv  # Import the load_dotenv function from the dotenv module
+
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -49,12 +55,12 @@ file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 file_handler.setFormatter(file_formatter)
 logging.getLogger().addHandler(file_handler)
 
-# The URL remains constant
-url = 'https://services.automation.cloud/v1/recruitment/job-posts/mine/'
+# API URL
+url = config.API_URL
 
 # Default values for category and country
-default_category = 'test'
-default_country = 'gb'
+default_category = config.DEFAULT_CATEGORY
+default_country = config.DEFAULT_COUNTRY
 
 # Maximum response body length to log
 max_response_body_length = 500

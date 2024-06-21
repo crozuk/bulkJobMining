@@ -1,0 +1,15 @@
+2024-06-21 23:22:36,592 - INFO - Request successful for job post ID: 221722321
+Status Code: 200
+Response Body: {"status":"queued","jobPostId":"221722321"}
+2024-06-21 23:22:36,593 - INFO - Total operation duration: 0.17 seconds
+---
+2024-06-21 23:22:53,081 - INFO - Request successful for job post ID: 221722321
+Status Code: 200
+Response Body: {"status":"queued","jobPostId":"221722321"}
+2024-06-21 23:22:53,081 - INFO - Total operation duration: 0.15 seconds
+---
+2024-06-21 23:23:44,137 - INFO - Request successful for job post ID: 221722321
+Status Code: 200
+Response Body: {"status":"queued","jobPostId":"221722321"}
+2024-06-21 23:23:44,137 - INFO - Total operation duration: 0.19 seconds
+---
