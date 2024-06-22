@@ -28,7 +28,7 @@
 #       Otherwise, the --secret-key argument must be provided.
 # source env/bin/activate
 
-# script.py
+# Import required modules
 import argparse
 import base64
 import concurrent.futures
@@ -54,23 +54,23 @@ file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 file_handler.setFormatter(file_formatter)
 logging.getLogger().addHandler(file_handler)
 
-# API URL
+# API URL from the config module
 url = config.API_URL
 
-# Default values for category and country
+# Default values for category and country from the config module
 default_category = config.DEFAULT_CATEGORY
 default_country = config.DEFAULT_COUNTRY
 
 # Maximum response body length to log
 max_response_body_length = 500
 
-
+# Function to encode a string using Base64
 def encode_base64(string):
     base64_bytes = base64.b64encode(string.encode('utf-8'))
     base64_string = base64_bytes.decode('utf-8')
     return base64_string
 
-
+# Function to make a POST request for a job post
 def make_curl_request(job_post_id: str, job_url: str, category: str,
                       country: str, secret_key: str) -> None:
     data: Dict[str, Any] = {
@@ -80,6 +80,7 @@ def make_curl_request(job_post_id: str, job_url: str, category: str,
         "country": country
     }
 
+    # Set headers with Base64-encoded secret key for authentication
     headers = {
         'Content-Type': 'application/json',
         'Authorization': f'Basic {encode_base64(secret_key + ":")}'
@@ -88,19 +89,20 @@ def make_curl_request(job_post_id: str, job_url: str, category: str,
     with Session() as session:
         try:
             response = session.post(url, headers=headers, json=data)
-            response.raise_for_status()
+            response.raise_for_status()  # Raise an exception for non-2xx status codes
+            
+            # Log the response body (truncated to max_response_body_length)
             response_body = response.text[:max_response_body_length] + (
                 '...' if len(response.text) > max_response_body_length else '')
             log_message = f"Request successful for job post ID: {job_post_id}\nStatus Code: {response.status_code}\nResponse Body: {response_body}"
             logging.info(log_message)
         except requests_exceptions.RequestException as e:
+            # Log the error message for failed requests
             log_message = f"Request failed for job post ID: {job_post_id}. Error: {e}"
             logging.error(log_message)
-            print(
-                f"ERROR - Request failed for job post ID: {job_post_id}. Error: {e}"
-            )
+            print(f"ERROR - Request failed for job post ID: {job_post_id}. Error: {e}")
 
-
+# Function to parse command-line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Send job post requests.')
     parser.add_argument('-c',
@@ -120,36 +122,32 @@ def parse_arguments():
                         help='Path to the CSV file (default: job_posts.csv)')
     return parser.parse_args()
 
-
+# Function to process rows from the CSV file
 def process_csv_rows(args):
     # Get the SECRET_KEY from environment variable or command-line argument
     secret_key = os.environ.get('SECRET_KEY') or args.secret_key
     if not secret_key:
-        logging.error(
-            "SECRET_KEY environment variable or --secret-key argument is not provided"
-        )
+        logging.error("SECRET_KEY environment variable or --secret-key argument is not provided")
         exit(1)
 
     try:
         start_time = time.time()
-        with open(args.csv_file, mode='r', newline='',
-                  encoding='utf-8-sig') as file:
+        with open(args.csv_file, mode='r', newline='', encoding='utf-8-sig') as file:
             reader = csv.DictReader(file)
 
+            # Check if the CSV file contains the required headers
             if 'jobPostId' not in reader.fieldnames or 'url' not in reader.fieldnames:
-                raise ValueError(
-                    "CSV does not contain required headers: 'jobPostId' and 'url'"
-                )
+                raise ValueError("CSV does not contain required headers: 'jobPostId' and 'url'")
 
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 futures = []
-                job_posts_processed = set(
-                )  # Keep track of processed job post IDs
+                job_posts_processed = set()  # Keep track of processed job post IDs
 
                 for row in reader:
                     job_post_id = row['jobPostId']
                     job_url = row['url']
 
+                    # Skip duplicate job post IDs
                     if job_post_id not in job_posts_processed:
                         futures.append(
                             executor.submit(make_curl_request, job_post_id,
@@ -157,6 +155,7 @@ def process_csv_rows(args):
                                             args.country, secret_key))
                         job_posts_processed.add(job_post_id)
 
+                # Wait for all futures to complete and handle exceptions
                 for future in concurrent.futures.as_completed(futures):
                     try:
                         future.result()
@@ -178,7 +177,6 @@ def process_csv_rows(args):
     except Exception as e:
         log_message = f"An error occurred: {e}"
         logging.error(log_message)
-
 
 # Parse command-line arguments
 args = parse_arguments()
