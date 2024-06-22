@@ -29,8 +29,6 @@
 # source env/bin/activate
 
 # script.py
-import config
-
 import argparse
 import base64
 import concurrent.futures
@@ -43,10 +41,11 @@ from typing import Any, Dict
 from requests import Session
 from requests import exceptions as requests_exceptions
 
-from dotenv import load_dotenv  # Import the load_dotenv function from the dotenv module
+import config
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Create a file handler for logging to a text file
 file_handler = logging.FileHandler('job_posts.log')
@@ -65,12 +64,15 @@ default_country = config.DEFAULT_COUNTRY
 # Maximum response body length to log
 max_response_body_length = 500
 
+
 def encode_base64(string):
     base64_bytes = base64.b64encode(string.encode('utf-8'))
     base64_string = base64_bytes.decode('utf-8')
     return base64_string
 
-def make_curl_request(job_post_id: str, job_url: str, category: str, country: str, secret_key: str) -> None:
+
+def make_curl_request(job_post_id: str, job_url: str, category: str,
+                      country: str, secret_key: str) -> None:
     data: Dict[str, Any] = {
         "jobPostId": job_post_id,
         "url": job_url,
@@ -94,41 +96,65 @@ def make_curl_request(job_post_id: str, job_url: str, category: str, country: st
         except requests_exceptions.RequestException as e:
             log_message = f"Request failed for job post ID: {job_post_id}. Error: {e}"
             logging.error(log_message)
-            print(f"ERROR - Request failed for job post ID: {job_post_id}. Error: {e}")
+            print(
+                f"ERROR - Request failed for job post ID: {job_post_id}. Error: {e}"
+            )
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Send job post requests.')
-    parser.add_argument('-c', '--category', default=default_category, help='Category for the job post (default: test)')
-    parser.add_argument('-n', '--country', default=default_country, help='Country for the job post (default: gb)')
-    parser.add_argument('-s', '--secret-key', help='Secret key for authentication')
-    parser.add_argument('-f', '--csv-file', default='job_posts.csv', help='Path to the CSV file (default: job_posts.csv)')
+    parser.add_argument('-c',
+                        '--category',
+                        default=default_category,
+                        help='Category for the job post (default: test)')
+    parser.add_argument('-n',
+                        '--country',
+                        default=default_country,
+                        help='Country for the job post (default: gb)')
+    parser.add_argument('-s',
+                        '--secret-key',
+                        help='Secret key for authentication')
+    parser.add_argument('-f',
+                        '--csv-file',
+                        default='job_posts.csv',
+                        help='Path to the CSV file (default: job_posts.csv)')
     return parser.parse_args()
+
 
 def process_csv_rows(args):
     # Get the SECRET_KEY from environment variable or command-line argument
     secret_key = os.environ.get('SECRET_KEY') or args.secret_key
     if not secret_key:
-        logging.error("SECRET_KEY environment variable or --secret-key argument is not provided")
+        logging.error(
+            "SECRET_KEY environment variable or --secret-key argument is not provided"
+        )
         exit(1)
 
     try:
         start_time = time.time()
-        with open(args.csv_file, mode='r', newline='', encoding='utf-8-sig') as file:
+        with open(args.csv_file, mode='r', newline='',
+                  encoding='utf-8-sig') as file:
             reader = csv.DictReader(file)
 
             if 'jobPostId' not in reader.fieldnames or 'url' not in reader.fieldnames:
-                raise ValueError("CSV does not contain required headers: 'jobPostId' and 'url'")
+                raise ValueError(
+                    "CSV does not contain required headers: 'jobPostId' and 'url'"
+                )
 
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 futures = []
-                job_posts_processed = set()  # Keep track of processed job post IDs
+                job_posts_processed = set(
+                )  # Keep track of processed job post IDs
 
                 for row in reader:
                     job_post_id = row['jobPostId']
                     job_url = row['url']
 
                     if job_post_id not in job_posts_processed:
-                        futures.append(executor.submit(make_curl_request, job_post_id, job_url, args.category, args.country, secret_key))
+                        futures.append(
+                            executor.submit(make_curl_request, job_post_id,
+                                            job_url, args.category,
+                                            args.country, secret_key))
                         job_posts_processed.add(job_post_id)
 
                 for future in concurrent.futures.as_completed(futures):
@@ -152,6 +178,7 @@ def process_csv_rows(args):
     except Exception as e:
         log_message = f"An error occurred: {e}"
         logging.error(log_message)
+
 
 # Parse command-line arguments
 args = parse_arguments()
