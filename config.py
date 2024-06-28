@@ -13,3 +13,6 @@ MAX_RESPONSE_BODY_LENGTH = 500
 
 # Retrieve the SECRET_KEY from the environment variable
 SECRET_KEY = os.environ.get('SECRET_KEY')
+
+# Default CSV file path
+CSV_FILE_PATH = 'job_posts.csv'

@@ -102,6 +102,10 @@ def make_curl_request(job_post_id: str, job_url: str, category: str,
             logging.error(log_message)
             print(f"ERROR - Request failed for job post ID: {job_post_id}. Error: {e}")
 
+
+# Import the CSV file path from the config module
+from config import CSV_FILE_PATH
+
 # Function to parse command-line arguments
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Send job post requests.')
@@ -118,8 +122,8 @@ def parse_arguments():
                         help='Secret key for authentication')
     parser.add_argument('-f',
                         '--csv-file',
-                        default='job_posts.csv',
-                        help='Path to the CSV file (default: job_posts.csv)')
+                        default=CSV_FILE_PATH,
+                        help=f'Path to the CSV file (default: {CSV_FILE_PATH})')
     return parser.parse_args()
 
 # Function to process rows from the CSV file
