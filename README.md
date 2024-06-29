@@ -34,7 +34,7 @@ The script uses an environment variable for authentication. This can be set eith
 
 Create a `.env` file in the same directory as your script with the following content:
 
-```bash
+```text
 SECRET_KEY=your_secret_key
 ```
 
