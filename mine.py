@@ -75,7 +75,7 @@ def make_curl_request(job_post_id: str, job_url: str, category: str,
             print(f"{log_message}\n{hr}")
         except requests_exceptions.HTTPError as e:
             if response.status_code == 401:
-                log_message = f"Unauthorized access for job post ID: {job_post_id}. Error: {e}"
+                log_message = f"Unauthorized access for job mining: {job_post_id}. Error: {e}"
             elif response.status_code == 404:
                 log_message = f"Not found for job post ID: {job_post_id}. Error: {e}"
             else:
