@@ -26,9 +26,23 @@ DEFAULT_COUNTRY = "gb"
 CSV_FILE_PATH = "job_posts.csv"
 ```
 
-## Environment Variables
+### Environment Variables
 
-Set the `SECRET_KEY` environment variable, which is used for authentication in API requests:
+The script uses an environment variable for authentication. This can be set either via the command line or by using a `.env` file.
+
+#### .env File
+
+Create a `.env` file in the same directory as your script with the following content:
+
+```
+SECRET_KEY=your_secret_key
+```
+
+This file will be automatically loaded by the script to set the `SECRET_KEY` environment variable.
+
+#### Direct Setting of Environment Variables
+
+Alternatively, you can set the `SECRET_KEY` environment variable directly in your shell:
 
 - On Unix-like systems (Linux, macOS):
 
@@ -41,6 +55,22 @@ Set the `SECRET_KEY` environment variable, which is used for authentication in A
     ```bash
     setx SECRET_KEY "<your_secret_key_value>"
     ```
+
+### Configuration Variables in `config.py`
+
+Other default configuration settings are managed via the `config.py` file:
+
+```python
+# API endpoint URL
+API_URL = 'https://services.automation.cloud/v1/recruitment/job-posts/mine/'
+# Default values for category and country
+DEFAULT_CATEGORY = 'test'
+DEFAULT_COUNTRY = 'gb'
+# Maximum response body length to log
+MAX_RESPONSE_BODY_LENGTH = 500
+# Default CSV file path
+CSV_FILE_PATH = 'job_posts.csv'
+```
 
 ## Usage
 
