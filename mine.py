@@ -16,19 +16,18 @@ import config
 # Setup logging
 # =============================================================================
 log_format = '%(asctime)s - %(levelname)s - %(message)s'
-logging.basicConfig(level=logging.INFO,
-                    format=log_format)
-                    
+hr = '=' * 77
+logging.basicConfig(level=logging.INFO, format=log_format)
+
 # Create a file handler for logging to a text file
 file_handler = logging.FileHandler('job_posts.log')
 file_handler.setLevel(logging.INFO)
-file_formatter = logging.Formatter(log_format)
+file_formatter = logging.Formatter(f'{log_format}\n{hr}')
 file_handler.setFormatter(file_formatter)
 logging.getLogger().addHandler(file_handler)
 
 def log_with_hr(logger_function, message: str):
     """Logs a message followed by a horizontal rule using a specified logger function."""
-    hr = '=' * 77
     logger_function(f"{message}\n{hr}")
 
 # =============================================================================
@@ -73,11 +72,20 @@ def make_curl_request(job_post_id: str, job_url: str, category: str,
                            f"Status Code: {response.status_code}\n"
                            f"Response Body: {response_body}")
             log_with_hr(logging.info, log_message)
-            print(f"{log_message}\n{'='*77}")
+            print(f"{log_message}\n{hr}")
+        except requests_exceptions.HTTPError as e:
+            if response.status_code == 401:
+                log_message = f"Unauthorized access for job post ID: {job_post_id}. Error: {e}"
+            elif response.status_code == 404:
+                log_message = f"Not found for job post ID: {job_post_id}. Error: {e}"
+            else:
+                log_message = f"HTTP error for job post ID: {job_post_id}. Status Code: {response.status_code}. Error: {e}"
+            log_with_hr(logging.error, log_message)
+            print(f"ERROR - {log_message}\n{hr}")
         except requests_exceptions.RequestException as e:
             log_message = f"Request failed for job post ID: {job_post_id}. Error: {e}"
             log_with_hr(logging.error, log_message)
-            print(f"ERROR - {log_message}\n{'='*77}")
+            print(f"ERROR - {log_message}\n{hr}")
 
 # =============================================================================
 # Argument Parsing
@@ -101,15 +109,17 @@ def parse_arguments() -> argparse.Namespace:
 # Main Processing Function
 # =============================================================================
 def process_csv_rows(args: argparse.Namespace) -> None:
+    logging.info("Starting job post requests processing")
     secret_key = os.environ.get('SECRET_KEY') or args.secret_key
     if not secret_key:
         log_message = "SECRET_KEY environment variable or --secret-key argument is not provided"
         log_with_hr(logging.error, log_message)
-        print(f"ERROR - {log_message}\n{'='*77}")
+        print(f"ERROR - {log_message}\n{hr}")
         exit(1)
 
     try:
         start_time = time.time()
+        total_posts = 0
         with open(args.csv_file, mode='r', newline='', encoding='utf-8-sig') as file:
             reader = csv.DictReader(file)
 
@@ -123,6 +133,7 @@ def process_csv_rows(args: argparse.Namespace) -> None:
                 for row in reader:
                     job_post_id = row['jobPostId']
                     job_url = row['url']
+                    total_posts += 1
 
                     if job_post_id not in job_posts_processed:
                         futures.append(
@@ -137,25 +148,27 @@ def process_csv_rows(args: argparse.Namespace) -> None:
                     except Exception as e:
                         log_message = f"Exception occurred: {e}"
                         log_with_hr(logging.error, log_message)
-                        print(f"ERROR - {log_message}\n{'='*77}")
+                        print(f"ERROR - {log_message}\n{hr}")
 
         duration = time.time() - start_time
-        log_message = f"Total operation duration: {duration:.2f} seconds"
+        log_message = f"Total operation duration: {duration:.2f} seconds. Total job posts processed: {total_posts}"
         log_with_hr(logging.info, log_message)
-        print(f"{log_message}\n{'='*77}")
+        print(f"{log_message}\n{hr}")
 
     except FileNotFoundError:
         log_message = "CSV file not found. Please check the file path and try again."
         log_with_hr(logging.error, log_message)
-        print(f"ERROR - {log_message}\n{'='*77}")
+        print(f"ERROR - {log_message}\n{hr}")
     except ValueError as e:
         log_message = f"Value error: {e}"
         log_with_hr(logging.error, log_message)
-        print(f"ERROR - {log_message}\n{'='*77}")
+        print(f"ERROR - {log_message}\n{hr}")
     except Exception as e:
         log_message = f"An error occurred: {e}"
         log_with_hr(logging.error, log_message)
-        print(f"ERROR - {log_message}\n{'='*77}")
+        print(f"ERROR - {log_message}\n{hr}")
+    
+    logging.info("Completed job post requests processing")
 
 # =============================================================================
 # Entry Point
