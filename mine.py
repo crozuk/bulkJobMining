@@ -36,7 +36,7 @@ def log_with_hr(logger_function, message: str):
 url = config.API_URL  # API URL from the config module
 default_category = config.DEFAULT_CATEGORY  # Default category
 default_country = config.DEFAULT_COUNTRY    # Default country
-max_response_body_length = 500              # Max length of response body to log
+max_response_body_length = config.MAX_RESPONSE_BODY_LENGTH  # Max length of response body to log
 
 # =============================================================================
 # Utility Functions
@@ -116,6 +116,12 @@ def process_csv_rows(args: argparse.Namespace) -> None:
         log_with_hr(logging.error, log_message)
         print(f"ERROR - {log_message}\n{hr}")
         exit(1)
+
+    # Log which SECRET_KEY is being used
+    if os.environ.get('SECRET_KEY'):
+        logging.info("Using SECRET_KEY from environment variable")
+    else:
+        logging.info("Using SECRET_KEY from command-line argument")
 
     try:
         start_time = time.time()
