@@ -110,7 +110,7 @@ def parse_arguments() -> argparse.Namespace:
 # =============================================================================
 def process_csv_rows(args: argparse.Namespace) -> None:
     logging.info("Starting job post requests processing")
-    secret_key = os.environ.get('SECRET_KEY') or args.secret_key
+    secret_key = args.secret_key or os.environ.get('SECRET_KEY')
     if not secret_key:
         log_message = "SECRET_KEY environment variable or --secret-key argument is not provided"
         log_with_hr(logging.error, log_message)
@@ -118,10 +118,10 @@ def process_csv_rows(args: argparse.Namespace) -> None:
         exit(1)
 
     # Log which SECRET_KEY is being used
-    if os.environ.get('SECRET_KEY'):
-        logging.info("Using SECRET_KEY from environment variable")
-    else:
+    if args.secret_key:
         logging.info("Using SECRET_KEY from command-line argument")
+    else:
+        logging.info("Using SECRET_KEY from environment variable")
 
     try:
         start_time = time.time()
