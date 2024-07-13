@@ -77,7 +77,7 @@ CSV_FILE_PATH = 'job_posts.csv'
 Run the script with the following command:
 
 ```bash
-python script.py [options]
+python main.py [options]
 ```
 
 ### Command-Line Options
@@ -91,7 +91,7 @@ python script.py [options]
 ### Example
 
 ```bash
-python script.py --secret-key your_secret_key --category live --country us --csv-file my_job_posts.csv
+python main.py --secret-key your_secret_key --category live --country us --csv-file my_job_posts.csv
 ```
 
 ## Logging
