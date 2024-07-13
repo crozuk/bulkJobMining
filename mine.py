@@ -65,7 +65,7 @@ def make_curl_request(job_post_id: str, job_url: str, category: str,
         try:
             response = session.post(url, headers=headers, json=data)
             response.raise_for_status()
-            
+
             response_body = response.text[:max_response_body_length] + (
                 '...' if len(response.text) > max_response_body_length else '')
             log_message = (f"Request successful for job post ID: {job_post_id}\n"
@@ -146,7 +146,7 @@ def process_csv_rows(args: argparse.Namespace) -> None:
                     try:
                         future.result()
                     except Exception as e:
-                        log_message = f"Exception occurred: {e}"
+                        log_message = f"Exception occurred for job post ID: {job_post_id}. Error: {e}"
                         log_with_hr(logging.error, log_message)
                         print(f"ERROR - {log_message}\n{hr}")
 
@@ -167,7 +167,7 @@ def process_csv_rows(args: argparse.Namespace) -> None:
         log_message = f"An error occurred: {e}"
         log_with_hr(logging.error, log_message)
         print(f"ERROR - {log_message}\n{hr}")
-    
+
     logging.info("Completed job post requests processing")
 
 # =============================================================================
